@@ -32,30 +32,30 @@ app.post("/create", (req, res) => {
   const name = req.body.name;
   const email = req.body.email;
 
-  const schema = {
+  const schema = Joi.object({
     name: Joi.string().min(4).required(),
-  };
+  });
 
-  const result = Joi.validate(name, schema);
-  console.log(result, "user result here");
+  const result = schema.validate(req.body);
 
-  // if (!name || name.length < 4) {
-  //   res.status(500).send("Name lenght should be greater tha 4 letters");
-  //   return;
-  // }
-D
+  if (result.error) {
+    const errorResponse = {
+      status: "error",
+      message: "Validation failed",
+      details: result.error.details[0].message,
+    };
+    res.status(400).json(errorResponse);
+    return;
+  }
+
   try {
-    if (users.filter((u) => u.name === name).length > 0) {
-      res.status(500).send(`This User name is already registered`);
-    } else {
-      const obj = {
-        id: users.length + 1,
-        name: name,
-        email: email,
-      };
-      users.push(obj);
-      res.status(200).send(`User Created Successfully ${JSON.stringify(obj)}`);
-    }
+    const obj = {
+      id: users.length + 1,
+      name: name,
+      email: email,
+    };
+    users.push(obj);
+    res.status(200).send(`User Created Successfully ${JSON.stringify(obj)}`);
   } catch (error) {
     res.status(500).send(`Internal Server Error,${error}`);
   }
